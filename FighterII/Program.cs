@@ -8,8 +8,9 @@ Random gen = new();
 Console.WriteLine("What is your name?");
 p.name = Console.ReadLine();
 Console.Clear();
-while (true)
+while (p.hp > 0)
 {
+    Console.Clear();
     var currentdatetime = DateTime.Now;
     Console.WriteLine($"{currentdatetime.Hour}:{currentdatetime.Minute}:{currentdatetime.Second}");
     Console.WriteLine("What Do You Wish To Do? 1. Heal, 2. Go to store, 3. Fight, 4. Gamble. (Answer with numbers!)");
@@ -20,14 +21,13 @@ while (true)
 
     if (Ec == 1)
     {
-        Console.Clear();
         int heal = gen.Next(3, 20);
         p.hp += heal;
         Console.WriteLine($"You gained {heal} int health, you now have {p.hp}/100 int health");
     }
     else if (Ec == 2)
     {
-        Console.WriteLine("What do you want to buy? (answer in numbers!)");
+        Console.WriteLine($"What do you want to buy? (answer in numbers!)\nYou have ${p.cash}");
         for (int i = 0; i < ica.armours.Count + ica.weapons.Count; i++)
         {
             if (i == 0)
@@ -94,13 +94,31 @@ while (true)
         Console.BackgroundColor = ConsoleColor.Red;
         int F = gen.Next(fighters.Fighters.Count);
         Console.WriteLine($"You are fighting {fighters.Fighters[F].name}");
-        Console.WriteLine("They are wearing:");
+        Console.WriteLine("They're wearing:");
         for (int i = 0; i < fighters.Fighters[F].armours.Count; i++)
         {
             Console.WriteLine($"{fighters.Fighters[F].armours[i].name}, Strength: {fighters.Fighters[F].armours[i].strength}");
         }
         Console.WriteLine("(Press enter to continue!)");
         Console.ReadLine();
+        int OStrength = fighters.Fighters[F].strength;
+        int op = 0;
+        if (fighters.Fighters[F].weapons.Count > 0)
+        {
+            OStrength += fighters.Fighters[F].weapons[0].strength;
+        }
+        if (fighters.Fighters[F].armours.Count > 0)
+        {
+            for (var i = 0; i < fighters.Fighters[F].armours.Count; i++)
+            {
+                op += fighters.Fighters[F].armours[i].strength;
+            }
+        }
+        int PStrength = p.strength;
+        if (p.tools.Count > 0)
+        {
+            PStrength += p.tools[0].strength;
+        }
         while (fighters.Fighters[F].health > 0 && p.hp > 0)
         {
             Console.Clear();
@@ -130,13 +148,13 @@ while (true)
                         if (os == 1)
                         {
                             Console.WriteLine($"You both attacked and hit!");
-                            p.hp -= fighters.Fighters[F].strength;
-                            fighters.Fighters[F].health -= p.strength;
+                            p.hp -= OStrength;
+                            fighters.Fighters[F].health -= PStrength - (op / 2);
                         }
                         if (os == 2)
                         {
                             Console.WriteLine($"You both attacked but only you hit!");
-                            fighters.Fighters[F].health -= p.strength;
+                            fighters.Fighters[F].health -= PStrength;
                         }
                     }
                     if (oc == 2)
@@ -151,7 +169,7 @@ while (true)
                         if (os == 1)
                         {
                             Console.WriteLine($"You both attacked but you missed and {fighters.Fighters[F].name} hit!");
-                            p.hp -= fighters.Fighters[F].strength;
+                            p.hp -= OStrength;
                         }
                         if (os == 2)
                         {
@@ -162,6 +180,19 @@ while (true)
             }
             Console.WriteLine($"You have {p.hp} in health, and {fighters.Fighters[F].name} has {fighters.Fighters[F].health} in health! press enter to continue!");
             Console.ReadLine();
+            if (p.hp <= 0 && fighters.Fighters[F].health > 0)
+            {
+                Console.WriteLine("You have died!");
+            }
+            if (fighters.Fighters[F].health <= 0 && p.hp > 0)
+            {
+                int gain = 50 * (F + 1);
+                Console.WriteLine($"You won the fight! You won ${gain}");
+            }
+            if (p.hp <= 0 && fighters.Fighters[F].health <= 0)
+            {
+                Console.WriteLine("You both died!");
+            }
         }
     }
 }
